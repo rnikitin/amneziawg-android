@@ -20,12 +20,14 @@ import org.amnezia.awg.R
 import org.amnezia.awg.backend.Statistics
 import org.amnezia.awg.backend.StatusCallback
 import org.amnezia.awg.backend.Tunnel
+import org.amnezia.awg.config.Config
 import org.amnezia.awg.configStore.ConfigStore
 import org.amnezia.awg.databinding.ObservableSortedKeyedArrayList
 import org.amnezia.awg.util.ErrorMessages
 import org.amnezia.awg.util.UserKnobs
+import org.amnezia.awg.util.XgimiDesiredStatePolicy
+import org.amnezia.awg.util.XgimiWatchdogSettings
 import org.amnezia.awg.util.applicationScope
-import org.amnezia.awg.config.Config
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -224,7 +226,25 @@ class TunnelManager(private val configStore: ConfigStore) : BaseObservable() {
         newName!!
     }
 
-    suspend fun setTunnelState(tunnel: ObservableTunnel, state: Tunnel.State): Tunnel.State = withContext(Dispatchers.Main.immediate) {
+    suspend fun setTunnelStateFromUser(tunnel: ObservableTunnel, state: Tunnel.State): Tunnel.State {
+        val newState = setTunnelStateInternal(tunnel, state)
+        val desired = XgimiDesiredStatePolicy.fromUserResult(tunnel.name, newState)
+        try {
+            XgimiWatchdogSettings.setDesiredState(desired.enabled, desired.tunnelName)
+        } catch (e: Throwable) {
+            Log.e(TAG, "Failed to persist XGIMI desired tunnel state after user tunnel change", e)
+            throw e
+        }
+        return newState
+    }
+
+    suspend fun setTunnelStateFromWatchdog(tunnel: ObservableTunnel, state: Tunnel.State): Tunnel.State =
+        setTunnelStateInternal(tunnel, state)
+
+    suspend fun setTunnelState(tunnel: ObservableTunnel, state: Tunnel.State): Tunnel.State =
+        setTunnelStateFromUser(tunnel, state)
+
+    private suspend fun setTunnelStateInternal(tunnel: ObservableTunnel, state: Tunnel.State): Tunnel.State = withContext(Dispatchers.Main.immediate) {
         var newState = tunnel.state
         var throwable: Throwable? = null
         try {
