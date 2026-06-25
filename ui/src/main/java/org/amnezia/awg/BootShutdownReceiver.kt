@@ -16,6 +16,8 @@ class BootShutdownReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action ?: return
         applicationScope.launch {
+            if (Intent.ACTION_BOOT_COMPLETED == action)
+                XgimiWatchdogService.start(context, true)
             if (Application.getBackend() !is AwgQuickBackend) return@launch
             val tunnelManager = Application.getTunnelManager()
             if (Intent.ACTION_BOOT_COMPLETED == action) {

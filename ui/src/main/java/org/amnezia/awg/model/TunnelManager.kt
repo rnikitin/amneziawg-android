@@ -17,6 +17,7 @@ import org.amnezia.awg.Application.Companion.getBackend
 import org.amnezia.awg.Application.Companion.getTunnelManager
 import org.amnezia.awg.BR
 import org.amnezia.awg.R
+import org.amnezia.awg.XgimiWatchdogService
 import org.amnezia.awg.backend.Statistics
 import org.amnezia.awg.backend.StatusCallback
 import org.amnezia.awg.backend.Tunnel
@@ -234,6 +235,11 @@ class TunnelManager(private val configStore: ConfigStore) : BaseObservable() {
         } catch (e: Throwable) {
             Log.e(TAG, "Failed to persist XGIMI desired tunnel state after user tunnel change", e)
             throw e
+        }
+        try {
+            XgimiWatchdogService.start(context, checkNow = true)
+        } catch (e: RuntimeException) {
+            Log.w(TAG, "Failed to kick XGIMI watchdog after user tunnel change", e)
         }
         return newState
     }

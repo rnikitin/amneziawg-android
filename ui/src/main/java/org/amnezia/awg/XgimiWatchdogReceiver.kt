@@ -24,8 +24,6 @@ class XgimiWatchdogReceiver : BroadcastReceiver() {
         private const val TAG = "AmneziaWG/XgimiWatchdogReceiver"
         private val ALLOWED_ACTIONS = setOf(
             ACTION_KICK,
-            Intent.ACTION_BOOT_COMPLETED,
-            Intent.ACTION_LOCKED_BOOT_COMPLETED,
             Intent.ACTION_MY_PACKAGE_REPLACED,
             Intent.ACTION_USER_PRESENT,
         )
