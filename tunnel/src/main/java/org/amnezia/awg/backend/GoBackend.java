@@ -172,6 +172,27 @@ public final class GoBackend implements Backend {
     }
 
 
+    static long parseLastHandshakeSeconds(final String config) {
+        final String prefix = "last_handshake_time_sec=";
+        int start = -1;
+        while (true) {
+            start = config.indexOf(prefix, start + 1);
+            if (start < 0)
+                return -1;
+            if (start == 0 || config.charAt(start - 1) == '\n')
+                break;
+        }
+        start += prefix.length();
+        int end = config.indexOf('\n', start);
+        if (end < 0)
+            end = config.length();
+        try {
+            return Long.parseLong(config.substring(start, end));
+        } catch (final NumberFormatException ignored) {
+            return -2;
+        }
+    }
+
     /**
      * Get the last handshake time for a given {@link Tunnel}.
      *
@@ -188,19 +209,12 @@ public final class GoBackend implements Backend {
             return -2;
         }
 
-        for (final String line : config.split("\\n")) {
-            if (line.startsWith("last_handshake_time_sec=")) {
-                try {
-                    return Long.parseLong(line.substring(24));
-                } catch (final NumberFormatException ignored) {
-                    Log.e(TAG, "Failed to parse last_handshake_time_sec");
-                    return -2;
-                }
-            }
-        }
-
-        Log.e(TAG, "Failed to get last_handshake_time_sec");
-        return -1;
+        final long parsed = parseLastHandshakeSeconds(config);
+        if (parsed == -1L)
+            Log.e(TAG, "Failed to get last_handshake_time_sec");
+        else if (parsed == -2L)
+            Log.e(TAG, "Failed to parse last_handshake_time_sec");
+        return parsed;
     }
 
     /**
