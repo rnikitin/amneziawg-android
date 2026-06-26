@@ -4,6 +4,7 @@
  */
 package org.amnezia.awg.fragment
 
+import android.app.Activity
 import android.content.Context
 import android.util.Log
 import android.view.View
@@ -33,11 +34,13 @@ import kotlinx.coroutines.launch
 abstract class BaseFragment : Fragment(), OnSelectedTunnelChangedListener {
     private var pendingTunnel: ObservableTunnel? = null
     private var pendingTunnelUp: Boolean? = null
-    private val permissionActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+    private val permissionActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val tunnel = pendingTunnel
         val checked = pendingTunnelUp
-        if (tunnel != null && checked != null)
+        if (result.resultCode == Activity.RESULT_OK && tunnel != null && checked != null)
             setTunnelStateWithPermissionsResult(tunnel, checked)
+        else
+            showVpnAuthorizationRequired()
         pendingTunnel = null
         pendingTunnelUp = null
     }
@@ -106,6 +109,18 @@ abstract class BaseFragment : Fragment(), OnSelectedTunnelChangedListener {
                 Log.e(TAG, message, e)
             }
         }
+    }
+
+    private fun showVpnAuthorizationRequired() {
+        val activity = activity ?: return
+        val view = view
+        val message = ErrorMessages[org.amnezia.awg.backend.BackendException(org.amnezia.awg.backend.BackendException.Reason.VPN_NOT_AUTHORIZED)]
+        if (view != null)
+            Snackbar.make(view, message, Snackbar.LENGTH_LONG)
+                .setAnchorView(view.findViewById(R.id.create_fab))
+                .show()
+        else
+            Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
     }
 
     companion object {

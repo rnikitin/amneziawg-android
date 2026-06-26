@@ -6,6 +6,7 @@
 package org.amnezia.awg.activity
 
 import android.Manifest
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -36,6 +37,7 @@ import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.amnezia.awg.Application
 import org.amnezia.awg.R
+import org.amnezia.awg.backend.BackendException
 import org.amnezia.awg.backend.GoBackend
 import org.amnezia.awg.backend.Tunnel
 import org.amnezia.awg.databinding.Keyed
@@ -86,10 +88,12 @@ class TvMainActivity : AppCompatActivity() {
         }
     }
     private var pendingTunnel: ObservableTunnel? = null
-    private val permissionActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+    private val permissionActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val tunnel = pendingTunnel
-        if (tunnel != null)
+        if (result.resultCode == Activity.RESULT_OK && tunnel != null)
             setTunnelStateWithPermissionsResult(tunnel)
+        else
+            Toast.makeText(this, ErrorMessages[BackendException(BackendException.Reason.VPN_NOT_AUTHORIZED)], Toast.LENGTH_LONG).show()
         pendingTunnel = null
     }
 
@@ -157,7 +161,7 @@ class TvMainActivity : AppCompatActivity() {
                             }
                         } else {
                             if (Application.getBackend() is GoBackend) {
-                                val intent = GoBackend.VpnService.prepare(binding.root.context)
+                                val intent = GoBackend.VpnService.prepare(this@TvMainActivity)
                                 if (intent != null) {
                                     pendingTunnel = item
                                     permissionActivityResultLauncher.launch(intent)

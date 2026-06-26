@@ -4,6 +4,7 @@
  */
 package org.amnezia.awg.activity
 
+import android.app.Activity
 import android.content.ComponentName
 import android.os.Bundle
 import android.service.quicksettings.TileService
@@ -15,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import org.amnezia.awg.Application
 import org.amnezia.awg.QuickTileService
 import org.amnezia.awg.R
+import org.amnezia.awg.backend.BackendException
 import org.amnezia.awg.backend.GoBackend
 import org.amnezia.awg.backend.Tunnel
 import org.amnezia.awg.util.ErrorMessages
@@ -22,7 +24,14 @@ import kotlinx.coroutines.launch
 
 class TunnelToggleActivity : AppCompatActivity() {
     private val permissionActivityResultLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { toggleTunnelWithPermissionsResult() }
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK)
+                toggleTunnelWithPermissionsResult()
+            else {
+                Toast.makeText(this, ErrorMessages[BackendException(BackendException.Reason.VPN_NOT_AUTHORIZED)], Toast.LENGTH_LONG).show()
+                finishAffinity()
+            }
+        }
 
     private fun toggleTunnelWithPermissionsResult() {
         val tunnel = Application.getTunnelManager().lastUsedTunnel ?: return

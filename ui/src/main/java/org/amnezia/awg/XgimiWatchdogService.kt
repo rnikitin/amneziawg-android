@@ -20,6 +20,7 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.util.Log
 import org.amnezia.awg.activity.TvMainActivity
+import org.amnezia.awg.backend.BackendException
 import org.amnezia.awg.backend.Tunnel
 import org.amnezia.awg.util.XgimiNetworkProbe
 import org.amnezia.awg.util.XgimiWatchdogPolicy
@@ -247,6 +248,14 @@ class XgimiWatchdogService : Service() {
             }
         } catch (e: CancellationException) {
             throw e
+        } catch (e: BackendException) {
+            if (e.reason == BackendException.Reason.VPN_NOT_AUTHORIZED) {
+                Log.w(TAG, "VPN authorization required; stopping watchdog recovery", e)
+                stopBlocked("watchdog needs VPN authorization", "auth", e.reason.name)
+            } else {
+                Log.e(TAG, "Watchdog backend check failed", e)
+                XgimiWatchdogSettings.setStatus("watchdog error", "error", e.javaClass.simpleName)
+            }
         } catch (e: Throwable) {
             Log.e(TAG, "Watchdog check failed", e)
             XgimiWatchdogSettings.setStatus("watchdog error", "error", e.javaClass.simpleName)
@@ -254,6 +263,14 @@ class XgimiWatchdogService : Service() {
             if (lock.isHeld)
                 lock.release()
         }
+    }
+
+    private suspend fun stopBlocked(status: String, action: String, error: String) {
+        rescheduleOnDestroy = false
+        cancelAlarm()
+        XgimiWatchdogJobService.cancel(this)
+        XgimiWatchdogSettings.setStatus(status, action, error)
+        stopSelf()
     }
 
     private suspend fun stopIfNoLongerDesired(tunnelName: String): Boolean {
