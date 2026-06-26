@@ -71,7 +71,10 @@
 
         <activity
             android:name=".activity.TvMainActivity"
+            android:banner="@mipmap/banner"
             android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
             android:theme="@style/TvTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
