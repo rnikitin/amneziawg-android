@@ -29,34 +29,14 @@
             android:summaryOff="@string/xgimi_watchdog_enabled_summary_off"
             android:summaryOn="@string/xgimi_watchdog_enabled_summary_on"
             android:title="@string/xgimi_watchdog_enabled_title" />
-        <SeekBarPreference
-            android:defaultValue="10"
-            android:key="xgimi_watchdog_check_interval_seconds"
-            android:max="60"
-            android:title="@string/xgimi_watchdog_check_interval_title"
-            app:min="5"
-            app:showSeekBarValue="true" />
-        <SeekBarPreference
-            android:defaultValue="180"
-            android:key="xgimi_watchdog_stale_handshake_seconds_int"
-            android:max="600"
-            android:title="@string/xgimi_watchdog_stale_handshake_title"
-            app:min="60"
-            app:showSeekBarValue="true" />
-        <SeekBarPreference
-            android:defaultValue="60"
-            android:key="xgimi_watchdog_reconnect_cooldown_seconds"
-            android:max="300"
-            android:title="@string/xgimi_watchdog_reconnect_cooldown_title"
-            app:min="15"
-            app:showSeekBarValue="true" />
-        <SeekBarPreference
-            android:defaultValue="1500"
-            android:key="xgimi_watchdog_probe_timeout_millis"
-            android:max="5000"
-            android:title="@string/xgimi_watchdog_probe_timeout_title"
-            app:min="500"
-            app:showSeekBarValue="true" />
+        <ListPreference
+            android:defaultValue="balanced"
+            android:entries="@array/xgimi_watchdog_preset_entries"
+            android:entryValues="@array/xgimi_watchdog_preset_values"
+            android:key="xgimi_watchdog_preset"
+            android:singleLineTitle="false"
+            android:title="@string/xgimi_watchdog_preset_title"
+            app:useSimpleSummaryProvider="true" />
         <Preference
             android:key="xgimi_watchdog_status"
             android:selectable="false"

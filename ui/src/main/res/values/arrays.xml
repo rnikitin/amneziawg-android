@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="xgimi_watchdog_preset_entries">
+        <item>Aggressive - 5-15 seconds, more wakeups/logs</item>
+        <item>Balanced - 30-60 seconds, lower load and noise</item>
+        <item>Gentle - 2-5 minutes, avoids long VPN outages</item>
+    </string-array>
+    <string-array name="xgimi_watchdog_preset_values">
+        <item>aggressive</item>
+        <item>balanced</item>
+        <item>gentle</item>
+    </string-array>
+</resources>

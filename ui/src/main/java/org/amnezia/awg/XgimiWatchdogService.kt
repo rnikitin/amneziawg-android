@@ -69,7 +69,9 @@ class XgimiWatchdogService : Service() {
 
             rescheduleOnDestroy = true
             scheduleAlarm()
-            XgimiWatchdogJobService.schedule(this@XgimiWatchdogService)
+            val skipJobSchedule = intent?.getBooleanExtra(EXTRA_SKIP_JOB_SCHEDULE, false) == true
+            if (!skipJobSchedule)
+                XgimiWatchdogJobService.schedule(this@XgimiWatchdogService)
             if (intent?.getBooleanExtra(EXTRA_CHECK_NOW, false) == true)
                 checkOnce("intent", snapshot)
             if (!loopStarted) {
@@ -388,13 +390,16 @@ class XgimiWatchdogService : Service() {
         private const val CHANNEL_ID = "xgimi_watchdog"
         private const val NOTIFICATION_ID = 0x584749
         private const val EXTRA_CHECK_NOW = "check_now"
+        private const val EXTRA_SKIP_JOB_SCHEDULE = "skip_job_schedule"
         private const val MIN_CHECK_INTERVAL_MILLIS = 1_000L
         private const val ALARM_INTERVAL_MILLIS = 60_000L
         private const val WAKELOCK_TIMEOUT_MILLIS = 10_000L
 
-        fun start(context: Context, checkNow: Boolean = false) {
+        fun start(context: Context, checkNow: Boolean = false, skipJobSchedule: Boolean = false) {
             val appContext = context.applicationContext
-            val intent = Intent(appContext, XgimiWatchdogService::class.java).putExtra(EXTRA_CHECK_NOW, checkNow)
+            val intent = Intent(appContext, XgimiWatchdogService::class.java)
+                .putExtra(EXTRA_CHECK_NOW, checkNow)
+                .putExtra(EXTRA_SKIP_JOB_SCHEDULE, skipJobSchedule)
             try {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                     appContext.startForegroundService(intent)

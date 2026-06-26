@@ -129,6 +129,7 @@
     <string name="xgimi_watchdog_enabled_summary_off">Automatic recovery is disabled</string>
     <string name="xgimi_watchdog_enabled_summary_on">Recover the desired VPN tunnel in the background</string>
     <string name="xgimi_watchdog_enabled_title">Enable XGIMI watchdog</string>
+    <string name="xgimi_watchdog_preset_title">Recovery preset</string>
     <string name="xgimi_watchdog_check_interval_title">Check interval (seconds)</string>
     <string name="xgimi_watchdog_stale_handshake_title">Stale handshake threshold (seconds)</string>
     <string name="xgimi_watchdog_reconnect_cooldown_title">Reconnect cooldown (seconds)</string>

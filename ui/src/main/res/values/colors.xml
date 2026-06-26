@@ -63,4 +63,12 @@
     <color name="tunnel_status_connected">#4CAF50</color>
     <color name="tunnel_status_connecting">#FF9800</color>
     <color name="tunnel_status_disconnected">#F44336</color>
+    <color name="tv_focus_ring">#15181B</color>
+    <color name="tv_button_focus_tint">#15181B</color>
+    <color name="tv_button_focus_content">#FFFFFF</color>
+    <color name="tv_button_normal_tint">#E1E2EC</color>
+    <color name="tv_button_normal_content">#1B1B1F</color>
+    <color name="preference_checkbox_checked">#2E7D32</color>
+    <color name="preference_checkbox_unchecked">#44474F</color>
+    <color name="preference_checkbox_check">#FFFFFF</color>
 </resources>

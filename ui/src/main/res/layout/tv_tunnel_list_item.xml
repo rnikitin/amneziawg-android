@@ -40,7 +40,9 @@
         android:focusable="true"
         app:contentPadding="12dp"
         app:isDeleting="@{isDeleting}"
-        app:isUp="@{item.state == State.UP}">
+        app:isUp="@{item.state == State.UP}"
+        app:strokeColor="@color/tv_card_stroke"
+        app:strokeWidth="4dp">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

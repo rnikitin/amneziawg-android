@@ -73,10 +73,10 @@
             android:contentDescription="@string/tv_open_settings"
             android:minWidth="144dp"
             android:text="@string/settings"
-            android:textColor="?attr/colorOnSurface"
-            app:backgroundTint="?attr/colorSurfaceVariant"
+            android:textColor="@color/tv_button_content"
+            app:backgroundTint="@color/tv_button_tint"
             app:icon="@drawable/ic_settings"
-            app:iconTint="?attr/colorOnSurface"
+            app:iconTint="@color/tv_button_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
         </com.google.android.material.button.MaterialButton>
@@ -210,8 +210,10 @@
             android:contentDescription="@{filesRoot.isEmpty ? @string/tv_import_tunnel : @string/tv_back_to_tunnels}"
             android:minWidth="0dp"
             android:visibility="@{isDeleting ? View.GONE : View.VISIBLE}"
+            app:backgroundTint="@color/tv_button_tint"
             app:icon="@{filesRoot.isEmpty ? @drawable/ic_action_add_white : @drawable/ic_arrow_back}"
             app:iconPadding="0dp"
+            app:iconTint="@color/tv_button_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -224,8 +226,10 @@
             android:contentDescription="@{isDeleting ? @string/tv_back_to_tunnels : @string/tv_delete_tunnel}"
             android:minWidth="0dp"
             android:visibility="@{((tunnels.isEmpty &amp;&amp; !isDeleting) || !filesRoot.isEmpty) ? View.GONE : View.VISIBLE}"
+            app:backgroundTint="@color/tv_button_tint"
             app:icon="@{isDeleting ? @drawable/ic_arrow_back : @drawable/ic_action_delete}"
             app:iconPadding="0dp"
+            app:iconTint="@color/tv_button_content"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>

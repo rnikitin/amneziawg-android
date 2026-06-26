@@ -154,6 +154,7 @@
     <string name="xgimi_watchdog_enabled_summary_off">Автовосстановление выключено</string>
     <string name="xgimi_watchdog_enabled_summary_on">Восстанавливает выбранный VPN-туннель в фоне</string>
     <string name="xgimi_watchdog_enabled_title">Включить XGIMI watchdog</string>
+    <string name="xgimi_watchdog_preset_title">Режим восстановления</string>
     <string name="xgimi_watchdog_check_interval_title">Интервал проверки (секунды)</string>
     <string name="xgimi_watchdog_stale_handshake_title">Порог устаревшего handshake (секунды)</string>
     <string name="xgimi_watchdog_reconnect_cooldown_title">Пауза перед reconnect (секунды)</string>

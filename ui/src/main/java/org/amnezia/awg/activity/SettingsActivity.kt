@@ -111,10 +111,7 @@ class SettingsActivity : AppCompatActivity() {
             preferenceScreen.initialExpandedChildrenCount = Int.MAX_VALUE
             val keys = arrayOf(
                 "xgimi_watchdog_enabled",
-                "xgimi_watchdog_check_interval_seconds",
-                "xgimi_watchdog_stale_handshake_seconds_int",
-                "xgimi_watchdog_reconnect_cooldown_seconds",
-                "xgimi_watchdog_probe_timeout_millis",
+                "xgimi_watchdog_preset",
             )
             keys.forEach { key ->
                 preferenceManager.findPreference<Preference>(key)?.setOnPreferenceChangeListener { _, _ ->

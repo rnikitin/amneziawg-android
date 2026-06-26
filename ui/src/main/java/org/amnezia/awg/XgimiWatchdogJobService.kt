@@ -31,7 +31,7 @@ class XgimiWatchdogJobService : JobService() {
                 true
             }
             if (shouldStart)
-                XgimiWatchdogService.start(this@XgimiWatchdogJobService, true)
+                XgimiWatchdogService.start(this@XgimiWatchdogJobService, true, skipJobSchedule = true)
             else
                 cancel(this@XgimiWatchdogJobService)
             jobFinished(params, false)
@@ -46,8 +46,10 @@ class XgimiWatchdogJobService : JobService() {
         private const val JOB_ID = 0x5847494d
         private const val FIFTEEN_MINUTES = 15 * 60 * 1000L
 
-        fun schedule(context: Context) {
+        fun schedule(context: Context): Boolean {
             val scheduler = context.getSystemService(JobScheduler::class.java)
+            if (scheduler.getPendingJob(JOB_ID) != null)
+                return true
             val component = ComponentName(context, XgimiWatchdogJobService::class.java)
             val builder = JobInfo.Builder(JOB_ID, component)
                 .setPersisted(true)
@@ -55,7 +57,12 @@ class XgimiWatchdogJobService : JobService() {
                 .setPeriodic(FIFTEEN_MINUTES)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 builder.setRequiresBatteryNotLow(false)
-            scheduler.schedule(builder.build())
+            return try {
+                scheduler.schedule(builder.build()) == JobScheduler.RESULT_SUCCESS
+            } catch (e: RuntimeException) {
+                Log.w(TAG, "Unable to schedule watchdog job", e)
+                false
+            }
         }
 
         fun cancel(context: Context) {

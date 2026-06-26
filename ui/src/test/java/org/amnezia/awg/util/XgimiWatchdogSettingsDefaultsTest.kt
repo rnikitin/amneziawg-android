@@ -16,12 +16,13 @@ import org.junit.Test
 
 class XgimiWatchdogSettingsDefaultsTest {
     @Test
-    fun `defaults match low residency xgimi profile`() {
+    fun `defaults match balanced xgimi profile`() {
         assertEquals(true, XgimiWatchdogSettings.Defaults.enabled)
         assertEquals(false, XgimiWatchdogSettings.Defaults.desiredVpnEnabled)
-        assertEquals(10_000L, XgimiWatchdogSettings.Defaults.checkIntervalMillis)
+        assertEquals("balanced", XgimiWatchdogSettings.Defaults.preset)
+        assertEquals(30_000L, XgimiWatchdogSettings.Defaults.checkIntervalMillis)
         assertEquals(60_000L, XgimiWatchdogSettings.Defaults.healthyHandshakeIntervalMillis)
-        assertEquals(180L, XgimiWatchdogSettings.Defaults.staleHandshakeSeconds)
+        assertEquals(60L, XgimiWatchdogSettings.Defaults.staleHandshakeSeconds)
         assertEquals(60_000L, XgimiWatchdogSettings.Defaults.reconnectCooldownMillis)
         assertEquals("1.1.1.1", XgimiWatchdogSettings.Defaults.probeHost)
         assertEquals(53, XgimiWatchdogSettings.Defaults.probePort)
@@ -58,9 +59,9 @@ class XgimiWatchdogSettingsDefaultsTest {
         assertEquals(true, snapshot.enabled)
         assertEquals(false, snapshot.desiredVpnEnabled)
         assertNull(snapshot.desiredTunnelName)
-        assertEquals(10_000L, snapshot.checkIntervalMillis)
+        assertEquals(30_000L, snapshot.checkIntervalMillis)
         assertEquals(60_000L, snapshot.healthyHandshakeIntervalMillis)
-        assertEquals(180L, snapshot.staleHandshakeSeconds)
+        assertEquals(60L, snapshot.staleHandshakeSeconds)
         assertEquals(60_000L, snapshot.reconnectCooldownMillis)
         assertEquals("1.1.1.1", snapshot.probeHost)
         assertEquals(53, snapshot.probePort)
@@ -83,7 +84,6 @@ class XgimiWatchdogSettingsDefaultsTest {
             longPreferencesKey("xgimi_watchdog_reconnect_cooldown_millis") to 90_000L,
             stringPreferencesKey("xgimi_watchdog_probe_host") to "9.9.9.9",
             intPreferencesKey("xgimi_watchdog_probe_port") to 853,
-            intPreferencesKey("xgimi_watchdog_probe_timeout_millis") to 2_000,
             intPreferencesKey("xgimi_watchdog_max_status_events") to 48,
             stringPreferencesKey("xgimi_watchdog_last_status") to "healthy",
             stringPreferencesKey("xgimi_watchdog_last_action") to "none",
@@ -101,7 +101,7 @@ class XgimiWatchdogSettingsDefaultsTest {
         assertEquals(90_000L, snapshot.reconnectCooldownMillis)
         assertEquals("9.9.9.9", snapshot.probeHost)
         assertEquals(853, snapshot.probePort)
-        assertEquals(2_000, snapshot.probeTimeoutMillis)
+        assertEquals(1_500, snapshot.probeTimeoutMillis)
         assertEquals(48, snapshot.maxStatusEvents)
         assertEquals("healthy", snapshot.lastStatus)
         assertEquals("none", snapshot.lastAction)
@@ -109,18 +109,51 @@ class XgimiWatchdogSettingsDefaultsTest {
     }
 
     @Test
-    fun `snapshot maps tv integer tuning preferences`() {
+    fun `snapshot maps aggressive preset`() {
         val preferences = mutablePreferencesOf(
-            intPreferencesKey("xgimi_watchdog_check_interval_seconds") to 15,
-            intPreferencesKey("xgimi_watchdog_stale_handshake_seconds_int") to 240,
-            intPreferencesKey("xgimi_watchdog_reconnect_cooldown_seconds") to 90,
+            stringPreferencesKey("xgimi_watchdog_preset") to "aggressive",
         )
 
         val snapshot = XgimiWatchdogSettings.snapshotFrom(preferences)
 
-        assertEquals(15_000L, snapshot.checkIntervalMillis)
-        assertEquals(240L, snapshot.staleHandshakeSeconds)
-        assertEquals(90_000L, snapshot.reconnectCooldownMillis)
+        assertEquals(5_000L, snapshot.checkIntervalMillis)
+        assertEquals(15_000L, snapshot.healthyHandshakeIntervalMillis)
+        assertEquals(15L, snapshot.staleHandshakeSeconds)
+        assertEquals(15_000L, snapshot.reconnectCooldownMillis)
+        assertEquals(1_000, snapshot.probeTimeoutMillis)
+    }
+
+    @Test
+    fun `snapshot maps gentle preset`() {
+        val preferences = mutablePreferencesOf(
+            stringPreferencesKey("xgimi_watchdog_preset") to "gentle",
+        )
+
+        val snapshot = XgimiWatchdogSettings.snapshotFrom(preferences)
+
+        assertEquals(120_000L, snapshot.checkIntervalMillis)
+        assertEquals(300_000L, snapshot.healthyHandshakeIntervalMillis)
+        assertEquals(300L, snapshot.staleHandshakeSeconds)
+        assertEquals(300_000L, snapshot.reconnectCooldownMillis)
+        assertEquals(2_000, snapshot.probeTimeoutMillis)
+    }
+
+    @Test
+    fun `snapshot ignores stale tv integer tuning preferences`() {
+        val preferences = mutablePreferencesOf(
+            intPreferencesKey("xgimi_watchdog_check_interval_seconds") to 5,
+            intPreferencesKey("xgimi_watchdog_stale_handshake_seconds_int") to 600,
+            intPreferencesKey("xgimi_watchdog_reconnect_cooldown_seconds") to 300,
+            intPreferencesKey("xgimi_watchdog_probe_timeout_millis") to 5_000,
+        )
+
+        val snapshot = XgimiWatchdogSettings.snapshotFrom(preferences)
+
+        assertEquals(30_000L, snapshot.checkIntervalMillis)
+        assertEquals(60_000L, snapshot.healthyHandshakeIntervalMillis)
+        assertEquals(60L, snapshot.staleHandshakeSeconds)
+        assertEquals(60_000L, snapshot.reconnectCooldownMillis)
+        assertEquals(1_500, snapshot.probeTimeoutMillis)
     }
 
     @Test

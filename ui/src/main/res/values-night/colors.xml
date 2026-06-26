@@ -4,5 +4,12 @@
     <color name="tunnel_status_connected">#66BB6A</color>
     <color name="tunnel_status_connecting">#FFB74D</color>
     <color name="tunnel_status_disconnected">#EF5350</color>
+    <color name="tv_focus_ring">#FFFFFF</color>
+    <color name="tv_button_focus_tint">#E3E2E6</color>
+    <color name="tv_button_focus_content">#15181B</color>
+    <color name="tv_button_normal_tint">#44474F</color>
+    <color name="tv_button_normal_content">#E3E2E6</color>
+    <color name="preference_checkbox_checked">#66BB6A</color>
+    <color name="preference_checkbox_unchecked">#C4C6D0</color>
+    <color name="preference_checkbox_check">#111318</color>
 </resources>
-
