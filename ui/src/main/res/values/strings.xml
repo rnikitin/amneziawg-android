@@ -108,6 +108,33 @@
     <string name="tv_select_a_storage_drive">Select a storage drive</string>
     <string name="tv_no_file_picker">Please install a file management utility to browse files</string>
     <string name="tv_add_tunnel_get_started">Add a tunnel to get started</string>
+    <string name="tv_back_to_tunnels">Back to tunnels</string>
+    <string name="tv_delete_tunnel">Delete tunnel</string>
+    <string name="tv_import_tunnel">Import tunnel</string>
+    <string name="tv_open_settings">Open settings</string>
+    <string name="tv_watchdog_content_description">XGIMI watchdog status</string>
+    <string name="tv_watchdog_title">Watchdog</string>
+    <string name="tv_watchdog_status_armed">Armed</string>
+    <string name="tv_watchdog_status_authorization">VPN authorization required</string>
+    <string name="tv_watchdog_status_disabled">Off</string>
+    <string name="tv_watchdog_status_ready">Ready</string>
+    <string name="tv_watchdog_status_unavailable">Status unavailable</string>
+    <string name="tv_watchdog_detail_armed">Keeping %1$s up. Last: %2$s</string>
+    <string name="tv_watchdog_detail_authorization">Open the tunnel once and confirm the Android VPN dialog</string>
+    <string name="tv_watchdog_detail_disabled">Automatic recovery is disabled in Settings</string>
+    <string name="tv_watchdog_detail_ready">Turn on a tunnel to arm auto-recovery</string>
+    <string name="tv_watchdog_last_tunnel">last tunnel</string>
+    <string name="tv_watchdog_waiting">waiting for first check</string>
+    <string name="xgimi_watchdog_category_title">XGIMI watchdog</string>
+    <string name="xgimi_watchdog_enabled_summary_off">Automatic recovery is disabled</string>
+    <string name="xgimi_watchdog_enabled_summary_on">Recover the desired VPN tunnel in the background</string>
+    <string name="xgimi_watchdog_enabled_title">Enable XGIMI watchdog</string>
+    <string name="xgimi_watchdog_check_interval_title">Check interval (seconds)</string>
+    <string name="xgimi_watchdog_stale_handshake_title">Stale handshake threshold (seconds)</string>
+    <string name="xgimi_watchdog_reconnect_cooldown_title">Reconnect cooldown (seconds)</string>
+    <string name="xgimi_watchdog_probe_timeout_title">Probe timeout (milliseconds)</string>
+    <string name="xgimi_watchdog_status_title">Current watchdog status</string>
+    <string name="xgimi_watchdog_status_summary_idle">No watchdog status yet</string>
     <string name="disable_config_export_title">Disable config exporting</string>
     <string name="disable_config_export_description">Disabling config exporting makes private keys less accessible</string>
     <string name="dns_servers">DNS servers</string>
@@ -263,4 +290,5 @@
     <string name="import_disclaimer">Ensure that you obtained the configuration file from a trusted source.\n\nOfficial Amnezia services are available only at <a href="https://amnezia.org">amnezia.org</a>\n</string>
     <string name="tunnel_status_connected">Connected</string>
     <string name="tunnel_status_connecting">Connecting…</string>
+    <string name="tunnel_status_disconnected">Disconnected</string>
 </resources>

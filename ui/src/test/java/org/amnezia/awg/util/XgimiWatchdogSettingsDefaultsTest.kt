@@ -109,6 +109,21 @@ class XgimiWatchdogSettingsDefaultsTest {
     }
 
     @Test
+    fun `snapshot maps tv integer tuning preferences`() {
+        val preferences = mutablePreferencesOf(
+            intPreferencesKey("xgimi_watchdog_check_interval_seconds") to 15,
+            intPreferencesKey("xgimi_watchdog_stale_handshake_seconds_int") to 240,
+            intPreferencesKey("xgimi_watchdog_reconnect_cooldown_seconds") to 90,
+        )
+
+        val snapshot = XgimiWatchdogSettings.snapshotFrom(preferences)
+
+        assertEquals(15_000L, snapshot.checkIntervalMillis)
+        assertEquals(240L, snapshot.staleHandshakeSeconds)
+        assertEquals(90_000L, snapshot.reconnectCooldownMillis)
+    }
+
+    @Test
     fun `desired state clears stale tunnel when enabled without tunnel`() {
         val desiredTunnelName = stringPreferencesKey("xgimi_watchdog_desired_tunnel_name")
         val preferences = mutablePreferencesOf(desiredTunnelName to "stale")

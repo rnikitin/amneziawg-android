@@ -16,10 +16,13 @@ import androidx.preference.PreferenceFragmentCompat
 import org.amnezia.awg.Application
 import org.amnezia.awg.QuickTileService
 import org.amnezia.awg.R
+import org.amnezia.awg.XgimiWatchdogService
 import org.amnezia.awg.backend.AwgQuickBackend
 import org.amnezia.awg.preference.PreferencesPreferenceDataStore
 import org.amnezia.awg.util.AdminKnobs
+import org.amnezia.awg.util.XgimiWatchdogSettings
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -82,6 +85,7 @@ class SettingsActivity : AppCompatActivity() {
                 startActivity(Intent(requireContext(), LogViewerActivity::class.java))
                 true
             }
+            installXgimiWatchdogPreferences()
             val kernelModuleEnabler = preferenceManager.findPreference<Preference>("kernel_module_enabler")
             if (AwgQuickBackend.hasKernelSupport()) {
                 lifecycleScope.launch {
@@ -96,6 +100,49 @@ class SettingsActivity : AppCompatActivity() {
             } else {
                 kernelModuleEnabler?.parent?.removePreference(kernelModuleEnabler)
             }
+        }
+
+        override fun onResume() {
+            super.onResume()
+            refreshXgimiWatchdogStatus()
+        }
+
+        private fun installXgimiWatchdogPreferences() {
+            preferenceScreen.initialExpandedChildrenCount = Int.MAX_VALUE
+            val keys = arrayOf(
+                "xgimi_watchdog_enabled",
+                "xgimi_watchdog_check_interval_seconds",
+                "xgimi_watchdog_stale_handshake_seconds_int",
+                "xgimi_watchdog_reconnect_cooldown_seconds",
+                "xgimi_watchdog_probe_timeout_millis",
+            )
+            keys.forEach { key ->
+                preferenceManager.findPreference<Preference>(key)?.setOnPreferenceChangeListener { _, _ ->
+                    lifecycleScope.launch {
+                        delay(PREFERENCE_WRITE_DELAY_MILLIS)
+                        val snapshot = XgimiWatchdogSettings.snapshot()
+                        if (snapshot.enabled && snapshot.desiredVpnEnabled)
+                            XgimiWatchdogService.start(requireContext(), true)
+                        refreshXgimiWatchdogStatus()
+                    }
+                    true
+                }
+            }
+            refreshXgimiWatchdogStatus()
+        }
+
+        private fun refreshXgimiWatchdogStatus() {
+            lifecycleScope.launch {
+                val preference = preferenceManager.findPreference<Preference>("xgimi_watchdog_status") ?: return@launch
+                val snapshot = XgimiWatchdogSettings.snapshot()
+                preference.summary = snapshot.lastStatus.ifBlank {
+                    getString(R.string.xgimi_watchdog_status_summary_idle)
+                }
+            }
+        }
+
+        companion object {
+            private const val PREFERENCE_WRITE_DELAY_MILLIS = 100L
         }
     }
 }

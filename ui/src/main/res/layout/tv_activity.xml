@@ -24,6 +24,18 @@
             type="androidx.databinding.ObservableField&lt;String&gt;" />
 
         <variable
+            name="watchdogTitle"
+            type="androidx.databinding.ObservableField&lt;String&gt;" />
+
+        <variable
+            name="watchdogMessage"
+            type="androidx.databinding.ObservableField&lt;String&gt;" />
+
+        <variable
+            name="watchdogNeedsAttention"
+            type="androidx.databinding.ObservableBoolean" />
+
+        <variable
             name="tunnels"
             type="org.amnezia.awg.databinding.ObservableKeyedArrayList&lt;String, ObservableTunnel&gt;" />
 
@@ -38,29 +50,92 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:paddingStart="40dp"
+        android:paddingTop="28dp"
+        android:paddingEnd="40dp"
+        android:paddingBottom="28dp">
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/banner_logo"
-            android:layout_width="wrap_content"
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_title"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginStart="5dp"
-            android:layout_marginTop="5dp"
-            app:cardElevation="2dp"
-            app:contentPadding="0dp"
+            android:text="@string/app_name"
+            android:textAppearance="?attr/textAppearanceDisplaySmall"
+            app:layout_constraintEnd_toStartOf="@id/settings_button"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/settings_button"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:contentDescription="@string/tv_open_settings"
+            android:minWidth="144dp"
+            android:text="@string/settings"
+            android:textColor="?attr/colorOnSurface"
+            app:backgroundTint="?attr/colorSurfaceVariant"
+            app:icon="@drawable/ic_settings"
+            app:iconTint="?attr/colorOnSurface"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+        </com.google.android.material.button.MaterialButton>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/watchdog_panel"
+            android:layout_width="0dp"
+            android:layout_height="96dp"
+            android:layout_marginTop="20dp"
+            android:background="?attr/colorSurfaceVariant"
+            android:contentDescription="@string/tv_watchdog_content_description"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/tv_title">
 
-            <!-- <ImageView -->
-            <!--     android:layout_width="320dp" -->
-            <!--     android:layout_height="67dp" -->
-            <!--     android:contentDescription="@string/app_name" -->
-            <!--     android:scaleType="fitXY" -->
-            <!--     app:srcCompat="@drawable/tv_logo_banner" /> -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/watchdog_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tv_watchdog_title"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:layout_constraintBottom_toTopOf="@id/watchdog_status"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed" />
 
-        </com.google.android.material.card.MaterialCardView>
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/watchdog_status"
+                android:layout_width="320dp"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@{watchdogTitle}"
+                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:textColor="@{watchdogNeedsAttention ? @color/tunnel_status_disconnected : @color/tunnel_status_connected}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/watchdog_label"
+                tools:text="@string/tv_watchdog_status_ready" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/watchdog_summary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="@{watchdogMessage}"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/watchdog_status"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="@string/tv_watchdog_detail_ready" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/tunnel_list"
@@ -74,8 +149,9 @@
             app:layout="@{@layout/tv_tunnel_list_item}"
             app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
             app:layout_constraintBottom_toTopOf="@id/delete_button"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/banner_logo"
+            app:layout_constraintTop_toBottomOf="@id/watchdog_panel"
             app:spanCount="3"
             tools:itemCount="10"
             tools:listitem="@layout/tv_tunnel_list_item" />
@@ -90,7 +166,7 @@
             android:textAppearance="?attr/textAppearanceTitleLarge"
             android:visibility="@{filesRoot.isEmpty ? View.GONE : View.VISIBLE}"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/banner_logo"
+            app:layout_constraintTop_toBottomOf="@id/watchdog_panel"
             tools:visibility="gone" />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -122,7 +198,7 @@
             app:layout_constraintBottom_toTopOf="@id/delete_button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/banner_logo"
+            app:layout_constraintTop_toBottomOf="@id/watchdog_panel"
             tools:visibility="gone" />
 
         <com.google.android.material.button.MaterialButton
@@ -131,6 +207,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
+            android:contentDescription="@{filesRoot.isEmpty ? @string/tv_import_tunnel : @string/tv_back_to_tunnels}"
             android:minWidth="0dp"
             android:visibility="@{isDeleting ? View.GONE : View.VISIBLE}"
             app:icon="@{filesRoot.isEmpty ? @drawable/ic_action_add_white : @drawable/ic_arrow_back}"
@@ -144,6 +221,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
+            android:contentDescription="@{isDeleting ? @string/tv_back_to_tunnels : @string/tv_delete_tunnel}"
             android:minWidth="0dp"
             android:visibility="@{((tunnels.isEmpty &amp;&amp; !isDeleting) || !filesRoot.isEmpty) ? View.GONE : View.VISIBLE}"
             app:icon="@{isDeleting ? @drawable/ic_arrow_back : @drawable/ic_action_delete}"

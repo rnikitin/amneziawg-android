@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:key="settings">
     <org.amnezia.awg.preference.VersionPreference
         android:icon="@drawable/ic_icon"
@@ -18,6 +19,51 @@
         android:singleLineTitle="false"
         android:summary="@string/log_viewer_pref_summary"
         android:title="@string/log_viewer_pref_title" />
+    <PreferenceCategory
+        android:key="xgimi_watchdog_category"
+        android:title="@string/xgimi_watchdog_category_title">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="xgimi_watchdog_enabled"
+            android:singleLineTitle="false"
+            android:summaryOff="@string/xgimi_watchdog_enabled_summary_off"
+            android:summaryOn="@string/xgimi_watchdog_enabled_summary_on"
+            android:title="@string/xgimi_watchdog_enabled_title" />
+        <SeekBarPreference
+            android:defaultValue="10"
+            android:key="xgimi_watchdog_check_interval_seconds"
+            android:max="60"
+            android:title="@string/xgimi_watchdog_check_interval_title"
+            app:min="5"
+            app:showSeekBarValue="true" />
+        <SeekBarPreference
+            android:defaultValue="180"
+            android:key="xgimi_watchdog_stale_handshake_seconds_int"
+            android:max="600"
+            android:title="@string/xgimi_watchdog_stale_handshake_title"
+            app:min="60"
+            app:showSeekBarValue="true" />
+        <SeekBarPreference
+            android:defaultValue="60"
+            android:key="xgimi_watchdog_reconnect_cooldown_seconds"
+            android:max="300"
+            android:title="@string/xgimi_watchdog_reconnect_cooldown_title"
+            app:min="15"
+            app:showSeekBarValue="true" />
+        <SeekBarPreference
+            android:defaultValue="1500"
+            android:key="xgimi_watchdog_probe_timeout_millis"
+            android:max="5000"
+            android:title="@string/xgimi_watchdog_probe_timeout_title"
+            app:min="500"
+            app:showSeekBarValue="true" />
+        <Preference
+            android:key="xgimi_watchdog_status"
+            android:selectable="false"
+            android:singleLineTitle="false"
+            android:summary="@string/xgimi_watchdog_status_summary_idle"
+            android:title="@string/xgimi_watchdog_status_title" />
+    </PreferenceCategory>
     <CheckBoxPreference
         android:defaultValue="false"
         android:key="dark_theme"

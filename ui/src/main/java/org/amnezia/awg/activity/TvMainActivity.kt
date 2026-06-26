@@ -51,6 +51,7 @@ import org.amnezia.awg.util.ErrorMessages
 import org.amnezia.awg.util.QuantityFormatter
 import org.amnezia.awg.util.TunnelImporter
 import org.amnezia.awg.util.UserKnobs
+import org.amnezia.awg.util.XgimiWatchdogSettings
 import org.amnezia.awg.util.applicationScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -92,8 +93,10 @@ class TvMainActivity : AppCompatActivity() {
         val tunnel = pendingTunnel
         if (result.resultCode == Activity.RESULT_OK && tunnel != null)
             setTunnelStateWithPermissionsResult(tunnel)
-        else
+        else {
+            recordVpnAuthorizationRequired()
             Toast.makeText(this, ErrorMessages[BackendException(BackendException.Reason.VPN_NOT_AUTHORIZED)], Toast.LENGTH_LONG).show()
+        }
         pendingTunnel = null
     }
 
@@ -102,6 +105,8 @@ class TvMainActivity : AppCompatActivity() {
             try {
                 tunnel.setStateAsync(Tunnel.State.TOGGLE)
             } catch (e: Throwable) {
+                if (e is BackendException && e.reason == BackendException.Reason.VPN_NOT_AUTHORIZED)
+                    recordVpnAuthorizationRequired()
                 val error = ErrorMessages[e]
                 val message = getString(R.string.error_up, error)
                 Toast.makeText(this@TvMainActivity, message, Toast.LENGTH_LONG).show()
@@ -111,10 +116,20 @@ class TvMainActivity : AppCompatActivity() {
         }
     }
 
+    private fun recordVpnAuthorizationRequired() {
+        lifecycleScope.launch {
+            XgimiWatchdogSettings.setStatus("watchdog needs VPN authorization", "auth", BackendException.Reason.VPN_NOT_AUTHORIZED.name)
+            updateWatchdogStatus()
+        }
+    }
+
     private lateinit var binding: TvActivityBinding
     private val isDeleting = ObservableBoolean()
     private val files = ObservableKeyedArrayList<String, KeyedFile>()
     private val filesRoot = ObservableField("")
+    private val watchdogTitle = ObservableField("")
+    private val watchdogMessage = ObservableField("")
+    private val watchdogNeedsAttention = ObservableBoolean()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (AppCompatDelegate.getDefaultNightMode() != AppCompatDelegate.MODE_NIGHT_YES) {
@@ -137,6 +152,9 @@ class TvMainActivity : AppCompatActivity() {
         binding.isDeleting = isDeleting
         binding.files = files
         binding.filesRoot = filesRoot
+        binding.watchdogTitle = watchdogTitle
+        binding.watchdogMessage = watchdogMessage
+        binding.watchdogNeedsAttention = watchdogNeedsAttention
         val gridManager = binding.tunnelList.layoutManager as GridLayoutManager
         gridManager.spanSizeLookup = SlatedSpanSizeLookup(gridManager)
         binding.tunnelRowConfigurationHandler = object : ObservableKeyedRecyclerViewAdapter.RowConfigurationHandler<TvTunnelListItemBinding, ObservableTunnel> {
@@ -235,6 +253,9 @@ class TvMainActivity : AppCompatActivity() {
                 binding.tunnelList.requestFocus()
             }
         }
+        binding.settingsButton.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
 
         val backPressedCallback = onBackPressedDispatcher.addCallback(this) { handleBackPressed() }
         val updateBackPressedCallback = object : Observable.OnPropertyChangedCallback() {
@@ -252,6 +273,7 @@ class TvMainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             while (true) {
                 updateStats()
+                updateWatchdogStatus()
                 delay(1000)
             }
         }
@@ -378,6 +400,47 @@ class TvMainActivity : AppCompatActivity() {
             } catch (_: Throwable) {
                 listItem.tunnelTransfer.visibility = View.GONE
                 listItem.tunnelTransfer.text = ""
+            }
+        }
+    }
+
+    private suspend fun updateWatchdogStatus() {
+        val snapshot = try {
+            XgimiWatchdogSettings.snapshot()
+        } catch (e: Throwable) {
+            Log.w(TAG, "Unable to read XGIMI watchdog status", e)
+            watchdogTitle.set(getString(R.string.tv_watchdog_status_unavailable))
+            watchdogMessage.set(e.javaClass.simpleName)
+            watchdogNeedsAttention.set(true)
+            return
+        }
+
+        val needsAuthorization = snapshot.lastAction == "auth" ||
+            snapshot.lastError == BackendException.Reason.VPN_NOT_AUTHORIZED.name ||
+            snapshot.lastStatus.contains("authorization", ignoreCase = true)
+
+        when {
+            needsAuthorization -> {
+                watchdogTitle.set(getString(R.string.tv_watchdog_status_authorization))
+                watchdogMessage.set(getString(R.string.tv_watchdog_detail_authorization))
+                watchdogNeedsAttention.set(true)
+            }
+            !snapshot.enabled -> {
+                watchdogTitle.set(getString(R.string.tv_watchdog_status_disabled))
+                watchdogMessage.set(getString(R.string.tv_watchdog_detail_disabled))
+                watchdogNeedsAttention.set(false)
+            }
+            snapshot.desiredVpnEnabled -> {
+                val tunnelName = snapshot.desiredTunnelName ?: getString(R.string.tv_watchdog_last_tunnel)
+                val lastStatus = snapshot.lastStatus.ifBlank { getString(R.string.tv_watchdog_waiting) }
+                watchdogTitle.set(getString(R.string.tv_watchdog_status_armed))
+                watchdogMessage.set(getString(R.string.tv_watchdog_detail_armed, tunnelName, lastStatus))
+                watchdogNeedsAttention.set(false)
+            }
+            else -> {
+                watchdogTitle.set(getString(R.string.tv_watchdog_status_ready))
+                watchdogMessage.set(getString(R.string.tv_watchdog_detail_ready))
+                watchdogNeedsAttention.set(false)
             }
         }
     }

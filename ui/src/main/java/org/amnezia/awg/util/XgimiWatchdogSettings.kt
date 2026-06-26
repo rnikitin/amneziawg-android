@@ -14,6 +14,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import org.amnezia.awg.Application
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.util.concurrent.TimeUnit
 
 object XgimiWatchdogSettings {
     object Defaults {
@@ -53,6 +54,9 @@ object XgimiWatchdogSettings {
     private val HEALTHY_HANDSHAKE_INTERVAL_MILLIS = longPreferencesKey("xgimi_watchdog_healthy_handshake_interval_millis")
     private val STALE_HANDSHAKE_SECONDS = longPreferencesKey("xgimi_watchdog_stale_handshake_seconds")
     private val RECONNECT_COOLDOWN_MILLIS = longPreferencesKey("xgimi_watchdog_reconnect_cooldown_millis")
+    private val CHECK_INTERVAL_SECONDS = intPreferencesKey("xgimi_watchdog_check_interval_seconds")
+    private val STALE_HANDSHAKE_SECONDS_INT = intPreferencesKey("xgimi_watchdog_stale_handshake_seconds_int")
+    private val RECONNECT_COOLDOWN_SECONDS = intPreferencesKey("xgimi_watchdog_reconnect_cooldown_seconds")
     private val PROBE_HOST = stringPreferencesKey("xgimi_watchdog_probe_host")
     private val PROBE_PORT = intPreferencesKey("xgimi_watchdog_probe_port")
     private val PROBE_TIMEOUT_MILLIS = intPreferencesKey("xgimi_watchdog_probe_timeout_millis")
@@ -84,10 +88,16 @@ object XgimiWatchdogSettings {
         enabled = preferences[ENABLED] ?: Defaults.enabled,
         desiredVpnEnabled = preferences[DESIRED_VPN_ENABLED] ?: Defaults.desiredVpnEnabled,
         desiredTunnelName = preferences[DESIRED_TUNNEL_NAME],
-        checkIntervalMillis = preferences[CHECK_INTERVAL_MILLIS] ?: Defaults.checkIntervalMillis,
+        checkIntervalMillis = preferences[CHECK_INTERVAL_MILLIS]
+            ?: preferences[CHECK_INTERVAL_SECONDS]?.let { TimeUnit.SECONDS.toMillis(it.toLong()) }
+            ?: Defaults.checkIntervalMillis,
         healthyHandshakeIntervalMillis = preferences[HEALTHY_HANDSHAKE_INTERVAL_MILLIS] ?: Defaults.healthyHandshakeIntervalMillis,
-        staleHandshakeSeconds = preferences[STALE_HANDSHAKE_SECONDS] ?: Defaults.staleHandshakeSeconds,
-        reconnectCooldownMillis = preferences[RECONNECT_COOLDOWN_MILLIS] ?: Defaults.reconnectCooldownMillis,
+        staleHandshakeSeconds = preferences[STALE_HANDSHAKE_SECONDS]
+            ?: preferences[STALE_HANDSHAKE_SECONDS_INT]?.toLong()
+            ?: Defaults.staleHandshakeSeconds,
+        reconnectCooldownMillis = preferences[RECONNECT_COOLDOWN_MILLIS]
+            ?: preferences[RECONNECT_COOLDOWN_SECONDS]?.let { TimeUnit.SECONDS.toMillis(it.toLong()) }
+            ?: Defaults.reconnectCooldownMillis,
         probeHost = preferences[PROBE_HOST] ?: Defaults.probeHost,
         probePort = preferences[PROBE_PORT] ?: Defaults.probePort,
         probeTimeoutMillis = preferences[PROBE_TIMEOUT_MILLIS] ?: Defaults.probeTimeoutMillis,

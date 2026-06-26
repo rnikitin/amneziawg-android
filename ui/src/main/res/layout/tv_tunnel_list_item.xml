@@ -29,15 +29,16 @@
     </data>
 
     <org.amnezia.awg.widget.TvCardView
-        android:layout_width="225dp"
-        android:layout_height="110dp"
+        android:layout_width="250dp"
+        android:layout_height="126dp"
         android:layout_margin="8dp"
         android:layout_marginTop="4dp"
         android:layout_marginBottom="0dp"
         android:backgroundTint="@color/tv_list_item_tint"
         android:checkable="true"
+        android:contentDescription="@{item.name}"
         android:focusable="true"
-        app:contentPadding="8dp"
+        app:contentPadding="12dp"
         app:isDeleting="@{isDeleting}"
         app:isUp="@{item.state == State.UP}">
 
@@ -47,21 +48,40 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tunnel_name"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:layout_marginEnd="12dp"
+                android:maxLines="1"
                 android:text="@{item.name}"
                 android:textAppearance="?attr/textAppearanceTitleLarge"
+                app:layout_constraintEnd_toStartOf="@id/tunnel_state"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="@sample/interface_names.json/names/names/name" />
 
             <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tunnel_transfer"
+                android:id="@+id/tunnel_state"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="@{item.state == State.UP ? @string/tunnel_status_connected : @string/tunnel_status_disconnected}"
+                android:textAppearance="?attr/textAppearanceLabelLarge"
+                android:textColor="@{item.state == State.UP ? @color/tunnel_status_connected : @color/tunnel_status_disconnected}"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tunnel_name"
+                tools:text="@string/tunnel_status_connected"
+                tools:textColor="@color/tunnel_status_connected" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tunnel_transfer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
                 android:textAppearance="?attr/textAppearanceBodyLarge"
                 android:visibility="@{isDeleting ? View.GONE : View.VISIBLE}"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 tools:text="rx: 200 MB, tx: 100 MB" />
 
