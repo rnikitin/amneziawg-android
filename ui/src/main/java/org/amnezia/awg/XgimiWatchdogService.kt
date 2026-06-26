@@ -356,7 +356,7 @@ class XgimiWatchdogService : Service() {
     private fun ensureNotificationChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O)
             return
-        val channel = NotificationChannel(CHANNEL_ID, "AmneziaWG watchdog", NotificationManager.IMPORTANCE_LOW)
+        val channel = NotificationChannel(CHANNEL_ID, "${getString(R.string.app_name)} watchdog", NotificationManager.IMPORTANCE_LOW)
         channel.setShowBadge(false)
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
@@ -366,7 +366,7 @@ class XgimiWatchdogService : Service() {
         val contentIntent = PendingIntent.getActivity(this, 0, activityIntent, pendingIntentFlags())
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Notification.Builder(this, CHANNEL_ID)
-                .setContentTitle("AmneziaWG")
+                .setContentTitle(getString(R.string.app_name))
                 .setContentText(text)
                 .setSmallIcon(R.drawable.ic_tile)
                 .setContentIntent(contentIntent)
@@ -376,7 +376,7 @@ class XgimiWatchdogService : Service() {
         } else {
             @Suppress("DEPRECATION")
             Notification.Builder(this)
-                .setContentTitle("AmneziaWG")
+                .setContentTitle(getString(R.string.app_name))
                 .setContentText(text)
                 .setSmallIcon(R.drawable.ic_tile)
                 .setContentIntent(contentIntent)
