@@ -50,6 +50,7 @@ import org.amnezia.awg.util.ErrorMessages
 import org.amnezia.awg.util.QuantityFormatter
 import org.amnezia.awg.util.TunnelImporter
 import org.amnezia.awg.util.UserKnobs
+import org.amnezia.awg.util.XgimiStartupTunnelPolicy
 import org.amnezia.awg.util.XgimiWatchdogSettings
 import org.amnezia.awg.util.applicationScope
 import kotlinx.coroutines.Dispatchers
@@ -88,21 +89,40 @@ class TvMainActivity : AppCompatActivity() {
         }
     }
     private var pendingTunnel: ObservableTunnel? = null
+    private var pendingTunnelState = Tunnel.State.TOGGLE
+    private var startupTunnelRequested = false
     private val permissionActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val tunnel = pendingTunnel
+        val state = pendingTunnelState
         if (result.resultCode == Activity.RESULT_OK && tunnel != null)
-            setTunnelStateWithPermissionsResult(tunnel)
+            setTunnelStateWithPermissionsResult(tunnel, state)
         else {
             recordVpnAuthorizationRequired()
             Toast.makeText(this, ErrorMessages[BackendException(BackendException.Reason.VPN_NOT_AUTHORIZED)], Toast.LENGTH_LONG).show()
         }
         pendingTunnel = null
+        pendingTunnelState = Tunnel.State.TOGGLE
     }
 
-    private fun setTunnelStateWithPermissionsResult(tunnel: ObservableTunnel) {
+    private fun requestTunnelState(tunnel: ObservableTunnel, state: Tunnel.State) {
+        lifecycleScope.launch {
+            if (Application.getBackend() is GoBackend) {
+                val intent = GoBackend.VpnService.prepare(this@TvMainActivity)
+                if (intent != null) {
+                    pendingTunnel = tunnel
+                    pendingTunnelState = state
+                    permissionActivityResultLauncher.launch(intent)
+                    return@launch
+                }
+            }
+            setTunnelStateWithPermissionsResult(tunnel, state)
+        }
+    }
+
+    private fun setTunnelStateWithPermissionsResult(tunnel: ObservableTunnel, state: Tunnel.State) {
         lifecycleScope.launch {
             try {
-                tunnel.setStateAsync(Tunnel.State.TOGGLE)
+                tunnel.setStateAsync(state)
             } catch (e: Throwable) {
                 if (e is BackendException && e.reason == BackendException.Reason.VPN_NOT_AUTHORIZED)
                     recordVpnAuthorizationRequired()
@@ -177,15 +197,7 @@ class TvMainActivity : AppCompatActivity() {
                                 Log.e(TAG, message, e)
                             }
                         } else {
-                            if (Application.getBackend() is GoBackend) {
-                                val intent = GoBackend.VpnService.prepare(this@TvMainActivity)
-                                if (intent != null) {
-                                    pendingTunnel = item
-                                    permissionActivityResultLauncher.launch(intent)
-                                    return@launch
-                                }
-                            }
-                            setTunnelStateWithPermissionsResult(item)
+                            requestTunnelState(item, Tunnel.State.TOGGLE)
                         }
                     }
                 }
@@ -268,6 +280,37 @@ class TvMainActivity : AppCompatActivity() {
                 delay(1000)
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        lifecycleScope.launch {
+            activateLastTunnelOnStartup(Application.getTunnelManager().getTunnels())
+        }
+    }
+
+    private suspend fun activateLastTunnelOnStartup(tunnels: Iterable<ObservableTunnel>) {
+        if (startupTunnelRequested)
+            return
+        startupTunnelRequested = true
+
+        val tunnelList = tunnels.toList()
+        val snapshot = try {
+            XgimiWatchdogSettings.snapshot()
+        } catch (e: Throwable) {
+            Log.w(TAG, "Unable to read startup tunnel settings", e)
+            null
+        }
+        val tunnelName = XgimiStartupTunnelPolicy.chooseTunnelToStart(
+            availableTunnelNames = tunnelList.map { it.name }.toSet(),
+            activeTunnelNames = tunnelList.filter { it.state == Tunnel.State.UP }.map { it.name }.toSet(),
+            desiredTunnelName = snapshot?.desiredTunnelName,
+            lastUsedTunnelName = Application.getTunnelManager().lastUsedTunnel?.name,
+        ) ?: return
+        val tunnel = tunnelList.firstOrNull { it.name == tunnelName } ?: return
+
+        Log.i(TAG, "Starting last VPN tunnel $tunnelName on TV launch")
+        requestTunnelState(tunnel, Tunnel.State.UP)
     }
 
     private var pendingNavigation: File? = null
